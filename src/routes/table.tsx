@@ -1,7 +1,20 @@
 import { Index, Show, createSignal, onMount, onCleanup } from "solid-js";
 import { parsePaste } from "~/lib/paste";
 import { TABLE_KEY, load, save } from "~/lib/storage";
-import { type Grid, emptyGrid, normalize, setCell, isGrid } from "~/lib/table";
+import {
+  type Grid,
+  emptyGrid,
+  normalize,
+  setCell,
+  isGrid,
+  ensureTrailingEmpty,
+  isRowEmpty,
+  isColEmpty,
+  addEmptyRow,
+  removeLastRow,
+  addEmptyCol,
+  removeLastCol,
+} from "~/lib/table";
 
 const SAVE_ERRORS = {
   quota: "Not saved: browser storage is full.",
@@ -85,7 +98,35 @@ export default function TablePad() {
   const commit = (event: Event) => {
     const at = cellOf(event.target);
     if (!at) return;
-    setGrid(setCell(grid(), at.row, at.col, (event.target as HTMLTextAreaElement).value));
+    const target = event.target as HTMLTextAreaElement;
+    let next = setCell(grid(), at.row, at.col, target.value);
+    const height = next.length;
+    const width = next[0].length;
+    const value = target.value;
+
+    // Row logic: maintain exactly one empty row at bottom
+    if (at.row === height - 1) {
+      if (value !== "") {
+        next = addEmptyRow(next);
+      } else if (height > 1 && isRowEmpty(next, height - 2)) {
+        next = removeLastRow(next);
+      }
+    }
+
+    // Column logic: maintain exactly one empty column at right
+    if (at.col === width - 1) {
+      if (value !== "") {
+        next = addEmptyCol(next);
+      } else if (width > 1 && isColEmpty(next, width - 2)) {
+        next = removeLastCol(next);
+      }
+    }
+
+    setGrid(next);
+    // Trimming can remove the edited row/column; keep the caret in the nearest cell.
+    if (document.activeElement !== target) {
+      focusCell(Math.min(at.row, next.length - 1), Math.min(at.col, next[0].length - 1));
+    }
     schedule();
   };
 
@@ -150,11 +191,11 @@ export default function TablePad() {
     }
     const parsed = parsePaste(html, plain);
     if (parsed.kind === "grid") {
-      setGrid(parsed.grid);
+      setGrid(ensureTrailingEmpty(parsed.grid));
       schedule();
     } else if (parsed.kind === "cell") {
       const at = cellOf(document.activeElement) ?? { row: 0, col: 0 };
-      setGrid(setCell(grid(), at.row, at.col, parsed.value));
+      setGrid(ensureTrailingEmpty(setCell(grid(), at.row, at.col, parsed.value)));
       schedule();
     } else {
       setHint(parsed.message);
@@ -180,7 +221,7 @@ export default function TablePad() {
       setGrid(emptyGrid());
       setHint("Stored table was invalid; started empty.");
     } else {
-      setGrid(normalize(stored.value));
+      setGrid(ensureTrailingEmpty(normalize(stored.value)));
     }
 
     const onMove = (e: MouseEvent) => {
