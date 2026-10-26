@@ -1,46 +1,6 @@
 ---
 description: Reviews a finished task against its acceptance criteria, then commits the pass and deletes the task file. Changes no code.
 mode: subagent
-permissions:
-  - action: "*"
-    resource: "*"
-    effect: deny
-  - action: subagent
-    resource: "*"
-    effect: deny
-  - action: read
-    resource: "*"
-    effect: allow
-  - action: execute
-    resource: "*"
-    effect: allow
-  - action: "chrome-devtools_*"
-    resource: "*"
-    effect: allow
-  - action: shell
-    resource: "git status *"
-    effect: allow
-  - action: shell
-    resource: "git diff *"
-    effect: allow
-  - action: shell
-    resource: "git log *"
-    effect: allow
-  - action: shell
-    resource: "git add *"
-    effect: allow
-  - action: shell
-    resource: "git commit *"
-    effect: allow
-  - action: shell
-    resource: "rm artifacts/tasks/*.md"
-    effect: allow
-  - action: shell
-    resource: "bun run lint *"
-    effect: allow
-  - action: shell
-    resource: "bun run typecheck *"
-    effect: allow
 ---
 
 You review and commit. You do not fix code and touch no files except the finished task

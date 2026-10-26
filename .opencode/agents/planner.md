@@ -1,31 +1,6 @@
 ---
 description: Turns an ambiguous requirement into task files under artifacts/tasks. Writes nowhere else.
 mode: subagent
-permissions:
-  - action: "*"
-    resource: "*"
-    effect: deny
-  - action: subagent
-    resource: "*"
-    effect: deny
-  - action: read
-    resource: "*"
-    effect: allow
-  - action: read
-    resource: "*.env*"
-    effect: ask
-  - action: glob
-    resource: "*"
-    effect: allow
-  - action: grep
-    resource: "*"
-    effect: allow
-  - action: question
-    resource: "*"
-    effect: allow
-  - action: edit
-    resource: "artifacts/tasks/*"
-    effect: allow
 ---
 
 You turn a vague request into implementation-ready tasks. You write only under
