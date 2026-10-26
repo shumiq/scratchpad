@@ -20,12 +20,14 @@ bun run dev       # vite dev
 bun run build     # vite build -> .output
 bun run start     # run built server
 bun run lint      # oxlint
+bun run typecheck # tsc --noEmit
 bun run format    # oxfmt, writes in place
 ```
 
-Pre-commit (husky) runs lint-staged: `oxlint --fix` + `oxfmt` on staged JS/TS, `oxfmt` on
-staged json/css/html/md/yaml. There is no test, typecheck, or CI config; `bun run build`
-is the only build verification — do not invent commands or add tooling unless asked.
+Pre-commit (husky) runs `bun typecheck`, then lint-staged: `oxlint --fix` + `oxfmt` on
+staged JS/TS, `oxfmt` on staged json/css/html/md/yaml. There is no test or CI config;
+`bun run build`, `bun run typecheck` and `bun run lint` are the checks — do not invent
+commands or add tooling unless asked.
 
 Tool permissions are enforced by OpenCode, not by this file: if a call is denied, stop and
 report it — never retry the same action in another form.
@@ -44,7 +46,8 @@ report it — never retry the same action in another form.
   `rpx` values map at `2rpx = 1px` on the web; interactive targets stay at least 44px.
   The Flip7 game-specific screens (logo, BOOM button, scoring cards, victory rankings)
   are reference patterns, not screens for this app.
-- `.husky/pre-commit` — runs `bunx lint-staged`; config lives in `package.json`.
+- `.husky/pre-commit` — runs `bun typecheck` then `bunx lint-staged`; config lives in
+  `package.json`.
 
 ## Gotchas
 
