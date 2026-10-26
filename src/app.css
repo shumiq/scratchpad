@@ -80,3 +80,71 @@
     background-color: var(--color-cream);
   }
 }
+
+/* Rendered markdown (Notepad preview). Inner elements come from the renderer's HTML. */
+@layer components {
+  .markdown {
+    font-family: var(--font-sans);
+    color: var(--color-primary-dark);
+    /* A very long unbroken line scrolls inside the panel instead of widening it. */
+    overflow-wrap: anywhere;
+  }
+
+  .markdown > * + * {
+    margin-top: 8px;
+  }
+
+  .markdown :is(h1, h2, h3, h4, h5, h6) {
+    line-height: 1.3;
+    font-weight: 700;
+  }
+
+  .markdown h1 {
+    font-size: var(--text-h1);
+  }
+
+  .markdown h2 {
+    font-size: var(--text-h2);
+  }
+
+  .markdown :is(h3, h4, h5, h6) {
+    font-size: var(--text-h3);
+  }
+
+  .markdown :is(ul, ol) {
+    padding-left: 20px;
+  }
+
+  .markdown ul {
+    list-style: disc;
+  }
+
+  .markdown ol {
+    list-style: decimal;
+  }
+
+  .markdown code {
+    font-family: ui-monospace, monospace;
+    font-size: 0.9em;
+    background: var(--color-primary-bg);
+    border-radius: var(--radius-sm);
+    padding: 1px 4px;
+  }
+
+  .markdown pre {
+    background: var(--color-primary-bg);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    overflow-x: auto;
+  }
+
+  .markdown pre code {
+    background: none;
+    padding: 0;
+  }
+
+  .markdown a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+}
