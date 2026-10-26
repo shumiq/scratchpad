@@ -27,6 +27,9 @@ Pre-commit (husky) runs lint-staged: `oxlint --fix` + `oxfmt` on staged JS/TS, `
 staged json/css/html/md/yaml. There is no test, typecheck, or CI config; `bun run build`
 is the only build verification — do not invent commands or add tooling unless asked.
 
+Tool permissions are enforced by OpenCode, not by this file: if a call is denied, stop and
+report it — never retry the same action in another form.
+
 ## Structure
 
 - `src/routes/` — file-based routes; `[...404].tsx` is the catch-all.

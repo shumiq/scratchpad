@@ -5,6 +5,9 @@ permissions:
   - action: "*"
     resource: "*"
     effect: deny
+  - action: subagent
+    resource: "*"
+    effect: deny
   - action: read
     resource: "*"
     effect: allow

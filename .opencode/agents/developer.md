@@ -28,11 +28,10 @@ You implement one task, then stop.
    structure, naming and style. No new dependency unless the task requires it.
    Keep `localStorage`/`window`/clipboard access client-only — SSR is on.
 3. Verify with `bun run lint` and `bun run build`. Do not start servers: the
-   technical leader runs `bun run dev` only when `reviewer` has been asked for a browser
-   check.
+   leader runs `bun run dev` only when `reviewer` has been asked for a browser check.
 4. Report: what changed (files), what you ran, the result, and anything the task
    got wrong.
 
-Do not edit `.md` files (tasks and docs belong to the technical leader), do not
+Do not edit `.md` files (tasks and docs belong to the leader), do not
 commit, do not push, do not launch other agents. One task per run — never pick up
 the next one on your own.
