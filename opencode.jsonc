@@ -1,29 +1,26 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "autoupdate": true,
   "default_agent": "leader",
   "plugins": ["@dietrichgebert/ponytail"],
   "instructions": ["artifacts/*.md"],
   "mcp": {
-    "bun-docs": {
-      "type": "remote",
-      "url": "https://bun.com/docs/mcp",
-      "enabled": true,
-    },
-    "chrome-devtools": {
-      "type": "local",
-      "command": ["bunx", "chrome-devtools-mcp@latest", "--headless"],
-      "enabled": true,
-    },
-    "tailwindcss-gitmcp": {
-      "type": "remote",
-      "url": "https://gitmcp.io/tailwindlabs/tailwindcss",
-      "enabled": true,
-    },
-    "solid-start-gitmcp": {
-      "type": "remote",
-      "url": "https://gitmcp.io/solidjs/solid-start",
-      "enabled": true,
+    "servers": {
+      "bun-docs": {
+        "type": "remote",
+        "url": "https://bun.com/docs/mcp",
+      },
+      "chrome-devtools": {
+        "type": "local",
+        "command": ["bunx", "chrome-devtools-mcp@latest", "--headless"],
+      },
+      "tailwindcss-gitmcp": {
+        "type": "remote",
+        "url": "https://gitmcp.io/tailwindlabs/tailwindcss",
+      },
+      "solid-start-gitmcp": {
+        "type": "remote",
+        "url": "https://gitmcp.io/solidjs/solid-start",
+      },
     },
   },
 }
