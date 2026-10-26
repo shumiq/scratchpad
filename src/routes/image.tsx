@@ -1,4 +1,5 @@
 import { Show, createSignal, onMount, onCleanup } from "solid-js";
+import { IMAGE_KEY, load, save, encodedSize } from "~/lib/storage";
 
 type Op =
   | "rotate:90"
@@ -9,6 +10,9 @@ type Op =
   | `resize:${number},${number}`;
 
 const HISTORY_LIMIT = 10; // max undo steps kept in memory
+const IMAGE_LIMIT = 2 * 1024 * 1024; // 2 MB
+
+type SaveState = "saved" | "oversized" | "corrupt" | null;
 
 export default function ImagePad() {
   const [dims, setDims] = createSignal<{ w: number; h: number } | null>(null);
@@ -16,18 +20,21 @@ export default function ImagePad() {
   const [ops, setOps] = createSignal<Op[]>([]);
   const [cursor, setCursor] = createSignal(0);
   const [crop, setCrop] = createSignal<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [isCropMode, setIsCropMode] = createSignal(false);
   const [capped, setCapped] = createSignal(false);
   const [resizeW, setResizeW] = createSignal(0);
   const [resizeH, setResizeH] = createSignal(0);
   const [locked, setLocked] = createSignal(true);
   const [resizeWarn, setResizeWarn] = createSignal(false);
   const [copyMsg, setCopyMsg] = createSignal<string | null>(null);
+  const [saveState, setSaveState] = createSignal<SaveState>(null);
   let canvas!: HTMLCanvasElement;
   let workArea!: HTMLDivElement;
   let original: CanvasImageSource | null = null;
   let origW = 0;
   let origH = 0;
   let sourceName = "";
+  let savedDataUrl: string | null = null;
 
   const render = () => {
     if (!original) return;
@@ -72,7 +79,8 @@ export default function ImagePad() {
         const parts = op.slice(5).split(",").map(Number);
         const cx = parts[0];
         const cy = parts[1];
-        ctx.transform(1, 0, 0, 1, -cx, -cy);
+        const m = ctx.getTransform();
+        ctx.setTransform(new DOMMatrix().translate(-cx, -cy).multiply(m));
         [cw, ch] = [parts[2], parts[3]];
       } else if (op.startsWith("resize:")) {
         const parts = op.slice(7).split(",").map(Number);
@@ -84,6 +92,7 @@ export default function ImagePad() {
     }
     ctx.drawImage(original, 0, 0);
     setDims({ w, h });
+    scheduleSave();
   };
 
   const pushOp = (op: Op) => {
@@ -99,6 +108,34 @@ export default function ImagePad() {
     setCursor(newCursor);
     if (dropped) setCapped(true);
     render();
+  };
+
+  const flush = () => {
+    if (!original || !dims()) return;
+    const dataUrl = canvas.toDataURL("image/png");
+    if (dataUrl === savedDataUrl) return;
+    const size = encodedSize(dataUrl);
+    if (size > IMAGE_LIMIT) {
+      setSaveState("oversized");
+      return;
+    }
+    const result = save(IMAGE_KEY, dataUrl);
+    if (result.ok) {
+      savedDataUrl = dataUrl;
+      setSaveState("saved");
+    } else {
+      setSaveState("corrupt");
+    }
+  };
+
+  let saveTimer: ReturnType<typeof setTimeout> | undefined;
+  const scheduleSave = () => {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(flush, 300);
+  };
+
+  const flushWhenHidden = () => {
+    if (document.visibilityState === "hidden") flush();
   };
 
   const undo = () => {
@@ -193,7 +230,7 @@ export default function ImagePad() {
   };
 
   const onPointerDown = (e: PointerEvent) => {
-    if (!dims()) return;
+    if (!dims() || !isCropMode()) return;
     const p = toImg(e);
     const r = crop();
     // resize handle hit (corners)
@@ -280,6 +317,14 @@ export default function ImagePad() {
     startRect = null;
   };
 
+  const toggleCropMode = () => {
+    if (isCropMode()) {
+      setIsCropMode(false);
+      setCrop(null);
+    } else {
+      setIsCropMode(true);
+    }
+  };
   const confirmCrop = () => {
     const r = crop();
     if (!r || r.w <= 0 || r.h <= 0) return;
@@ -288,7 +333,10 @@ export default function ImagePad() {
     );
     setCrop(null);
   };
-  const cancelCrop = () => setCrop(null);
+  const cancelCrop = () => {
+    setCrop(null);
+    setIsCropMode(false);
+  };
 
   const confirmResize = () => {
     const d = dims();
@@ -383,9 +431,54 @@ export default function ImagePad() {
 
   onMount(() => {
     workArea.focus();
-  });
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", flushWhenHidden);
+    // registered inside onMount so it only runs on the client, never during SSR disposal
+    onCleanup(() => {
+      window.removeEventListener("pagehide", flush);
+      document.removeEventListener("visibilitychange", flushWhenHidden);
+      clearTimeout(saveTimer);
+      flush();
+    });
 
-  onCleanup(() => {});
+    // Load stored image
+    const stored = load(
+      IMAGE_KEY,
+      null,
+      (value): value is string =>
+        typeof value === "string" &&
+        value.startsWith("data:image/") &&
+        // refuse oversized stored values too: they can only come from outside the app
+        value.length <= IMAGE_LIMIT,
+    );
+    if (stored.value) {
+      const img = new Image();
+      img.onload = () => {
+        original = img;
+        origW = img.width;
+        origH = img.height;
+        sourceName = "restored";
+        setOps([]);
+        setCursor(0);
+        setCapped(false);
+        setCrop(null);
+        savedDataUrl = stored.value;
+        render();
+        setResizeW(origW);
+        setResizeH(origH);
+        setResizeWarn(false);
+        setSaveState("saved");
+      };
+      img.onerror = () => {
+        setHint("Stored image was invalid; started empty.");
+        setSaveState("corrupt");
+      };
+      img.src = stored.value;
+    } else if (stored.corrupt) {
+      setHint("Stored image was invalid; started empty.");
+      setSaveState("corrupt");
+    }
+  });
 
   return (
     <main class="flex h-full flex-col overflow-hidden bg-cream font-mono text-body leading-5 text-primary-dark">
@@ -442,6 +535,15 @@ export default function ImagePad() {
           </button>
           <button
             type="button"
+            onClick={toggleCropMode}
+            disabled={!dims()}
+            class="rounded-full border border-primary/40 px-3 py-1 text-caption font-medium text-primary-dark hover:bg-primary-bg disabled:opacity-40"
+            classList={{ "bg-primary-bg": isCropMode() }}
+          >
+            Crop
+          </button>
+          <button
+            type="button"
             onClick={copyImage}
             disabled={!dims()}
             class="rounded-full border border-primary/40 px-3 py-1 text-caption font-medium text-primary-dark hover:bg-primary-bg disabled:opacity-40"
@@ -490,6 +592,23 @@ export default function ImagePad() {
             class="shrink-0 border-b border-primary/30 bg-cream px-3 py-2 text-caption font-medium text-primary-dark"
           >
             {message()}
+          </p>
+        )}
+      </Show>
+      <Show when={saveState()}>
+        {(state) => (
+          <p
+            role="status"
+            class="shrink-0 border-b px-3 py-2 text-caption font-medium"
+            classList={{
+              "bg-primary-bg border-primary/30 text-primary-dark": state() === "saved",
+              "bg-coral/10 border-coral text-coral-dark": state() === "oversized",
+              "bg-error/10 border-error text-error": state() === "corrupt",
+            }}
+          >
+            {state() === "saved" && "Saved"}
+            {state() === "oversized" && "Not saved — over 2 MB, lost when you leave or reload"}
+            {state() === "corrupt" && "Not saved"}
           </p>
         )}
       </Show>
