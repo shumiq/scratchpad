@@ -69,6 +69,12 @@ export default function TablePad() {
     const height = rows.length;
     const width = rows[0].length;
 
+    if ((event.ctrlKey || event.metaKey) && (event.key === "c" || event.key === "C")) {
+      if (event.target instanceof HTMLTextAreaElement) return;
+      event.preventDefault();
+      void copySelection();
+      return;
+    }
     if ((event.ctrlKey || event.metaKey) && (event.key === "a" || event.key === "A")) {
       event.preventDefault();
       setSel({ r1: 0, c1: 0, r2: height - 1, c2: width - 1 });
@@ -192,6 +198,34 @@ export default function TablePad() {
     const g = grid();
     setSel({ r1: 0, c1: c, r2: g.length - 1, c2: c });
   };
+  const toClipboardText = (g: Grid, s: Range | null) => {
+    const range = s ?? { r1: 0, c1: 0, r2: g.length - 1, c2: g[0].length - 1 };
+    const rows: string[] = [];
+    for (let r = range.r1; r <= range.r2; r++) {
+      const cells: string[] = [];
+      for (let c = range.c1; c <= range.c2; c++) {
+        // tabs/newlines inside a cell become a single space so output stays rectangular
+        cells.push((g[r]?.[c] ?? "").replace(/[\\t\\r\\n]+/g, " "));
+      }
+      rows.push(cells.join("\\t"));
+    }
+    return rows.join("\\n");
+  };
+
+  const copySelection = async () => {
+    setHint(null);
+    const text = toClipboardText(grid(), sel());
+    if (!navigator?.clipboard?.writeText) {
+      setHint("copy unavailable");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      setHint("copy unavailable");
+    }
+  };
+
   const selectAll = () => {
     const g = grid();
     setSel({ r1: 0, c1: 0, r2: g.length - 1, c2: g[0].length - 1 });
@@ -202,6 +236,13 @@ export default function TablePad() {
       <header class="shrink-0 border-b-2 border-dashed border-primary px-3 py-2 flex items-center justify-between">
         <h1 class="text-h3 font-headline tracking-headline uppercase">Table Pad</h1>
         <span class="text-caption text-primary-dark/70">{rangeText(sel())}</span>
+        <button
+          type="button"
+          onClick={() => void copySelection()}
+          class="ml-2 rounded-full border border-primary/40 px-3 py-1 text-caption font-medium text-primary-dark hover:bg-primary-bg"
+        >
+          Copy
+        </button>
       </header>
       <Show when={hint()}>
         {(message) => (
