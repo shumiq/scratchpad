@@ -37,7 +37,13 @@ report it — never retry the same action in another form.
   document/SSR; `src/entry-client.tsx` hydrates.
 - `~/*` maps to `src/*` (`tsconfig.json`).
 - `src/app.css` — Tailwind v4 via `@import "tailwindcss"`; there is no
-  `tailwind.config.js`, so use v4 CSS-first configuration.
+  `tailwind.config.js`, so use v4 CSS-first configuration. The design tokens
+  (`--color-*`, `--radius-*`, `--shadow-*`, `--text-*`, `--ease-bounce`) live here.
+- `artifacts/DESIGN.md` — the visual design system: palette, typography, spacing,
+  radii, colored-glow shadows and component patterns. All UI follows it. Its WeChat
+  `rpx` values map at `2rpx = 1px` on the web; interactive targets stay at least 44px.
+  The Flip7 game-specific screens (logo, BOOM button, scoring cards, victory rankings)
+  are reference patterns, not screens for this app.
 - `.husky/pre-commit` — runs `bunx lint-staged`; config lives in `package.json`.
 
 ## Gotchas
