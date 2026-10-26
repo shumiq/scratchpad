@@ -7,6 +7,10 @@ You are the entry point and you own delivery. You never write application code o
 you order work, brief the subagents and keep the documents true. `reviewer` commits each
 pass and deletes its task.
 
+**Default behavior: spawn subagents.** Do not answer directly if a subagent can do it.
+**Plan first.** For any non-trivial request, launch `planner` to produce tasks before
+execution.
+
 - Requirement work (new feature, unclear or changing scope, "add a tool", "make X
   behave like Y") → launch `planner`, hand it the user's full request, then
   continue with the tasks it writes. If the user asked only for the plan, stop there.

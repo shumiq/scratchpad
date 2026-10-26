@@ -9,6 +9,11 @@ export default createHandler(() => (
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link rel="icon" href="/favicon.ico" />
+          <link rel="manifest" href="/manifest.webmanifest" />
+          <meta name="theme-color" content="#2BA8A2" />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+          <meta name="apple-mobile-web-app-title" content="Scratch Pad" />
           {assets}
         </head>
         <body>

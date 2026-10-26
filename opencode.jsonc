@@ -3,6 +3,30 @@
   "default_agent": "leader",
   "plugins": ["@dietrichgebert/ponytail"],
   "instructions": ["artifacts/*.md"],
+  "permissions": {
+    "deny": ["bun run dev", "bun run start", "bun run preview"],
+  },
+  "commands": {
+    "plan": {
+      "description": "Generate a plan by spawning the planner agent",
+      "agent": "planner",
+      "prompt": "Create implementation tasks for: {{args}}",
+    },
+    "implement": {
+      "description": "Implement a specific plan from artifacts/tasks. If not specified, ask which one.",
+      "agent": "leader",
+      "prompt": "Implement the task(s) in artifacts/tasks/ for: {{args}}. If no task is specified, list available tasks and ask which one to implement.",
+    },
+    "continue": {
+      "description": "Implement all pending tasks in artifacts/tasks without asking",
+      "agent": "leader",
+      "prompt": "Continue implementing all remaining tasks in artifacts/tasks/ in dependency order. Do not ask for confirmation.",
+    },
+    "commit": {
+      "description": "Run the commit skill to sync docs and commit changes",
+      "skill": "commit",
+    },
+  },
   "mcp": {
     "servers": {
       "bun-docs": {
