@@ -17,7 +17,10 @@ text is tried as TSV, then a markdown table, then CSV. Multi-cell pastes replace
 contents; a paste that yields one cell goes into the focused cell, or the first cell when
 none is focused. Ragged row lengths are padded to the widest row.
 
-Column widths auto-fit the content. Cells behave as plain text.
+Column widths auto-fit the content. Cells behave as plain text. Typing in the last row or
+column grows the grid by one, so the pad always keeps exactly one trailing empty row and
+column. The table autosaves to `localStorage` and restores on reload; a corrupt stored value
+starts the pad empty with a warning.
 
 ## Out
 
