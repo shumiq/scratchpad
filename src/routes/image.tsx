@@ -467,6 +467,7 @@ export default function ImagePad() {
         setResizeW(origW);
         setResizeH(origH);
         setResizeWarn(false);
+        setHint(null);
         setSaveState("saved");
       };
       img.onerror = () => {
