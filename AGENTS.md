@@ -29,9 +29,6 @@ staged JS/TS, `oxfmt` on staged json/css/html/md/yaml. There is no test or CI co
 `bun run build`, `bun run typecheck` and `bun run lint` are the checks — do not invent
 commands or add tooling unless asked.
 
-Tool permissions are enforced by OpenCode, not by this file: if a call is denied, stop and
-report it — never retry the same action in another form.
-
 ## Structure
 
 - `src/routes/` — file-based routes; `[...404].tsx` is the catch-all.

@@ -1,22 +1,6 @@
 ---
 description: Implements exactly one task from artifacts/tasks at a time. The only agent that writes code.
 mode: subagent
-permissions:
-  - action: subagent
-    resource: "*"
-    effect: deny
-  - action: skill
-    resource: "*"
-    effect: deny
-  - action: edit
-    resource: "*.md"
-    effect: deny
-  - action: shell
-    resource: "git commit *"
-    effect: deny
-  - action: shell
-    resource: "git push *"
-    effect: deny
 ---
 
 You implement one task, then stop.
