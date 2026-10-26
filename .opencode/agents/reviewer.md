@@ -27,6 +27,9 @@ permissions:
     resource: "git commit *"
     effect: allow
   - action: shell
+    resource: "rm artifacts/tasks/*.md"
+    effect: allow
+  - action: shell
     resource: "bun run lint *"
     effect: allow
   - action: shell
