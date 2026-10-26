@@ -19,4 +19,4 @@ open notepad or paint — instant, no setup, no login. All data stays on the dev
 - `wiki/` — what each tool does, and what it deliberately does not do.
 - `tasks/` — the implementation breakdown, in order.
 - `ARCHITECTURE.md` — app shape, storage, performance and platform constraints.
-- `DESIGN.md` — visual design only (color, spacing, typography). Empty until the UI work starts.
+- `DESIGN.md` — visual design only (color, spacing, typography); its tokens live in `src/app.css`.
