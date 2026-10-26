@@ -6,9 +6,9 @@ Personal scratch pad web app: fast, client-side utility tools. All user data liv
 `localStorage` — no accounts, backend, or database. Performance is the main requirement:
 open and start typing/pasting immediately, so avoid heavyweight dependencies.
 
-Product spec: `artifacts/INDEX.md` (links DESIGN.md and ARCHITECTURE.md; not yet
-implemented). Current code is an untouched SolidStart + Tailwind scaffold
-(home/about/counter).
+Product spec: `artifacts/INDEX.md` (links DESIGN.md and ARCHITECTURE.md). The route
+foundation is implemented (`/`, `/table`, `/image`, each lazily loaded); the tool UIs
+are still stubs.
 
 ## Commands
 

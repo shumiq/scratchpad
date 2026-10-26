@@ -4,7 +4,7 @@ Personal scratch pad web app: a set of fast, client-side utility tools opened th
 open notepad or paint — instant, no setup, no login. All data stays on the device in
 `localStorage`.
 
-**Status:** spec only. The code is still the untouched SolidStart + Tailwind scaffold.
+**Status:** the route foundation is implemented (`/`, `/table`, `/image`); the tool UIs are still stubs.
 
 ## Tools
 
