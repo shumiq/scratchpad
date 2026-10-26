@@ -5,7 +5,8 @@ type Op =
   | "rotate:-90"
   | "flip:h"
   | "flip:v"
-  | `crop:${number},${number},${number},${number}`;
+  | `crop:${number},${number},${number},${number}`
+  | `resize:${number},${number}`;
 
 const HISTORY_LIMIT = 10; // max undo steps kept in memory
 
@@ -16,6 +17,10 @@ export default function ImagePad() {
   const [cursor, setCursor] = createSignal(0);
   const [crop, setCrop] = createSignal<{ x: number; y: number; w: number; h: number } | null>(null);
   const [capped, setCapped] = createSignal(false);
+  const [resizeW, setResizeW] = createSignal(0);
+  const [resizeH, setResizeH] = createSignal(0);
+  const [locked, setLocked] = createSignal(true);
+  const [resizeWarn, setResizeWarn] = createSignal(false);
   let canvas!: HTMLCanvasElement;
   let workArea!: HTMLDivElement;
   let original: CanvasImageSource | null = null;
@@ -35,6 +40,10 @@ export default function ImagePad() {
         const parts = op.slice(5).split(",").map(Number);
         w = parts[2];
         h = parts[3];
+      } else if (op.startsWith("resize:")) {
+        const parts = op.slice(7).split(",").map(Number);
+        w = parts[0];
+        h = parts[1];
       }
     }
     canvas.width = w;
@@ -63,6 +72,12 @@ export default function ImagePad() {
         const cy = parts[1];
         ctx.transform(1, 0, 0, 1, -cx, -cy);
         [cw, ch] = [parts[2], parts[3]];
+      } else if (op.startsWith("resize:")) {
+        const parts = op.slice(7).split(",").map(Number);
+        const nw = parts[0];
+        const nh = parts[1];
+        ctx.scale(nw / cw, nh / ch);
+        [cw, ch] = [nw, nh];
       }
     }
     ctx.drawImage(original, 0, 0);
@@ -89,11 +104,23 @@ export default function ImagePad() {
     setCursor((c) => Math.max(min, c - 1));
     setCrop(null);
     render();
+    const d = dims();
+    if (d) {
+      setResizeW(d.w);
+      setResizeH(d.h);
+    }
+    setResizeWarn(false);
   };
   const redo = () => {
     setCursor((c) => Math.min(ops().length, c + 1));
     setCrop(null);
     render();
+    const d = dims();
+    if (d) {
+      setResizeW(d.w);
+      setResizeH(d.h);
+    }
+    setResizeWarn(false);
   };
 
   const paste = async (event: ClipboardEvent) => {
@@ -133,6 +160,9 @@ export default function ImagePad() {
       setCapped(false);
       setCrop(null);
       render();
+      setResizeW(origW);
+      setResizeH(origH);
+      setResizeWarn(false);
     } catch {
       setHint("Paste an image to start");
     }
@@ -257,6 +287,21 @@ export default function ImagePad() {
   };
   const cancelCrop = () => setCrop(null);
 
+  const confirmResize = () => {
+    const d = dims();
+    if (!d) return;
+    const w = Math.round(resizeW());
+    const h = Math.round(resizeH());
+    if (w <= 0 || h <= 0) return;
+    const extreme = w > d.w * 2 || h > d.h * 2;
+    if (extreme && !resizeWarn()) {
+      setResizeWarn(true);
+      return;
+    }
+    pushOp(`resize:${w},${h}` as Op);
+    setResizeWarn(false);
+  };
+
   onMount(() => {
     workArea.focus();
   });
@@ -333,6 +378,60 @@ export default function ImagePad() {
           >
             {message()}
           </p>
+        )}
+      </Show>
+      <Show when={dims()}>
+        {(d) => (
+          <div class="shrink-0 flex flex-wrap items-center gap-2 border-b border-primary/30 px-3 py-2">
+            <label class="text-caption">W</label>
+            <input
+              type="number"
+              value={resizeW()}
+              onInput={(e) => {
+                const v = Number(e.currentTarget.value);
+                setResizeW(v);
+                if (locked()) {
+                  const ratio = d().h / d().w;
+                  setResizeH(Math.round(v * ratio));
+                }
+              }}
+              class="w-20 rounded border px-1"
+            />
+            <label class="text-caption">H</label>
+            <input
+              type="number"
+              value={resizeH()}
+              onInput={(e) => {
+                const v = Number(e.currentTarget.value);
+                setResizeH(v);
+                if (locked()) {
+                  const ratio = d().w / d().h;
+                  setResizeW(Math.round(v * ratio));
+                }
+              }}
+              class="w-20 rounded border px-1"
+            />
+            <label class="text-caption flex items-center gap-1">
+              <input
+                type="checkbox"
+                checked={locked()}
+                onChange={(e) => setLocked(e.currentTarget.checked)}
+              />
+              lock
+            </label>
+            <button
+              type="button"
+              onClick={confirmResize}
+              class="rounded-full border border-primary/40 px-3 py-1 text-caption"
+            >
+              {resizeWarn() ? "Proceed" : "Resize"}
+            </button>
+            <Show when={resizeWarn()}>
+              <span class="text-caption text-coral-dark">
+                Output over 2× source size; click Proceed to continue.
+              </span>
+            </Show>
+          </div>
         )}
       </Show>
       <div
