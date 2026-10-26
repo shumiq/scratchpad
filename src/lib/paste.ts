@@ -36,8 +36,8 @@ function parseHtmlTable(html: string): Grid | undefined {
   const role = (table?.getAttribute("role") ?? "").toLowerCase();
   if (!table || role === "presentation" || role === "none") return;
   const slots: (string | undefined)[][] = []; // value per covered [row][column]; unset = open
-  for (const [r, tr] of [...table.querySelectorAll("tr")].entries()) {
-    if (tr.closest("table") !== table) continue; // a nested table's rows belong to it
+  const trs = [...table.querySelectorAll("tr")].filter((tr) => tr.closest("table") === table); // a nested table's rows belong to it; filtered before enumerating so row indices stay dense
+  for (const [r, tr] of trs.entries()) {
     slots[r] ??= [];
     for (const cell of tr.children) {
       if (cell.tagName !== "TD" && cell.tagName !== "TH") continue;
