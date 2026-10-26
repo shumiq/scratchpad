@@ -1,4 +1,5 @@
-import { Index, createSignal } from "solid-js";
+import { Index, Show, createSignal } from "solid-js";
+import { parsePaste } from "~/lib/paste";
 import { type Grid, emptyGrid, setCell } from "~/lib/table";
 
 // Arrow keys move between cells; the value is the [row, column] step.
@@ -11,6 +12,7 @@ const MOVES: Record<string, [number, number]> = {
 
 export default function TablePad() {
   const [grid, setGrid] = createSignal<Grid>(emptyGrid());
+  const [hint, setHint] = createSignal<string | null>(null);
   let table!: HTMLTableElement;
 
   // Cells are found through the table's own indices, so no ref is kept per cell.
@@ -60,11 +62,57 @@ export default function TablePad() {
     focusCell(row, col);
   };
 
+  // The clipboard's flavours are read only in this DOM handler, which never runs on the
+  // server: a multi-cell grid replaces the pad's contents, a one-cell value stays in the
+  // focused cell, and anything without parseable text shows the hint.
+  const handlePaste = (event: ClipboardEvent) => {
+    const data = event.clipboardData;
+    if (!data) return;
+    // The signals carry the whole paste; the browser's own insertion into the focused
+    // cell would double it.
+    event.preventDefault();
+    setHint(null);
+    let html: string | undefined;
+    let plain: string | undefined;
+    // Separate try/catches: some browsers throw when asking for a non-present flavour,
+    // and one throwing flavour must not mask the other.
+    try {
+      html = data.getData("text/html") || undefined;
+    } catch {
+      html = undefined;
+    }
+    try {
+      plain = data.getData("text/plain") || undefined;
+    } catch {
+      plain = undefined;
+    }
+    const parsed = parsePaste(html, plain);
+    if (parsed.kind === "grid") {
+      setGrid(parsed.grid);
+    } else if (parsed.kind === "cell") {
+      // The focused cell gets the value, or the first cell when none is focused.
+      const at = cellOf(document.activeElement) ?? { row: 0, col: 0 };
+      setGrid(setCell(grid(), at.row, at.col, parsed.value));
+    } else {
+      setHint(parsed.message);
+    }
+  };
+
   return (
     <main class="flex h-full flex-col overflow-hidden bg-cream font-mono text-body leading-5 text-primary-dark">
       <header class="shrink-0 border-b-2 border-dashed border-primary px-3 py-2">
         <h1 class="text-h3 font-headline tracking-headline uppercase">Table Pad</h1>
       </header>
+      <Show when={hint()}>
+        {(message) => (
+          <p
+            role="alert"
+            class="shrink-0 border-b border-coral bg-cream px-3 py-2 text-caption font-medium text-coral-dark"
+          >
+            {message()}
+          </p>
+        )}
+      </Show>
       {/* The pane scrolls on both axes; long cells wrap at max-w-64 instead of widening it. */}
       <div class="min-h-0 flex-1 overflow-auto">
         <table
@@ -72,6 +120,7 @@ export default function TablePad() {
           aria-label="Table Pad grid"
           onInput={commit}
           onKeyDown={moveFocus}
+          onPaste={handlePaste}
           class="w-max border-collapse border-t border-l border-primary/40"
         >
           <tbody>
@@ -81,11 +130,14 @@ export default function TablePad() {
                   <Index each={row()}>
                     {(cell) => (
                       <td class="border-r border-b border-primary/40 align-top">
+                        {/* A reactive write, not a one-time ref init: same-value writes
+                            while typing are browser no-ops, so pasted text flows into the
+                            existing cells when the pasted shape overlaps the pad's. */}
                         <textarea
                           rows={1}
                           spellcheck={false}
                           autocomplete="off"
-                          ref={(el) => (el.value = cell())}
+                          value={cell()}
                           class="block field-sizing-content min-h-11 max-w-64 min-w-24 resize-none overflow-hidden border-0 bg-transparent px-2 py-2 text-body leading-5 text-primary-dark outline-none focus:bg-primary-bg"
                         />
                       </td>

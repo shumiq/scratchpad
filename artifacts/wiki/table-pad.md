@@ -12,6 +12,11 @@ Paste a table copied from anywhere and it becomes an editable grid:
 - markdown table
 - HTML table
 
+When the clipboard holds several representations, an HTML `<table>` wins; otherwise plain
+text is tried as TSV, then a markdown table, then CSV. Multi-cell pastes replace the pad's
+contents; a paste that yields one cell goes into the focused cell, or the first cell when
+none is focused. Ragged row lengths are padded to the widest row.
+
 Column widths auto-fit the content. Cells behave as plain text.
 
 ## Out
@@ -24,9 +29,3 @@ spreadsheet.
 
 No formulas, no formatting, no styling, no sorting/filtering, no data types.
 Plain text in, plain text out.
-
-## Open questions
-
-- How the source format is detected when the clipboard holds several representations
-  (HTML + plain text is the common case).
-- Whether a paste with ragged row lengths pads, trims, or keeps the shape as-is.
