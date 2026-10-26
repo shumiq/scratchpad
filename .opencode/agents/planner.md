@@ -1,6 +1,31 @@
 ---
 description: Turns an ambiguous requirement into task files under artifacts/tasks. Writes nowhere else.
 mode: subagent
+permissions:
+  - action: "*"
+    resource: "*"
+    effect: deny
+  - action: subagent
+    resource: "*"
+    effect: deny
+  - action: read
+    resource: "*"
+    effect: allow
+  - action: read
+    resource: "*.env*"
+    effect: ask
+  - action: glob
+    resource: "*"
+    effect: allow
+  - action: grep
+    resource: "*"
+    effect: allow
+  - action: question
+    resource: "*"
+    effect: allow
+  - action: edit
+    resource: "artifacts/tasks/*"
+    effect: allow
 ---
 
 You turn a vague request into implementation-ready tasks. You write only under
@@ -30,7 +55,7 @@ You turn a vague request into implementation-ready tasks. You write only under
    **Done when:** observable, testable outcome.
 
    - [ ] Concrete step or requirement.
-   - [ ] `bun run build` passes.
+   - [ ] `bun run typecheck` passes.
    ```
 
    Keep each task small enough for one developer session, and name the files it is

@@ -6,9 +6,45 @@ Personal scratch pad web app: fast, client-side utility tools. All user data liv
 `localStorage` — no accounts, backend, or database. Performance is the main requirement:
 open and start typing/pasting immediately, so avoid heavyweight dependencies.
 
-Product spec: `artifacts/INDEX.md` (links DESIGN.md and ARCHITECTURE.md). The route
-foundation and the Notepad editor are implemented; the Table Pad and Image Pad UIs are
-still stubs. All UI follows DESIGN.md's tokens in `src/app.css`.
+Product spec: `artifacts/INDEX.md` (links DESIGN.md and ARCHITECTURE.md). All three tools
+(Notepad, Table Pad, Image Pad) are implemented and all spec tasks have passed review. All
+UI follows DESIGN.md's tokens in `src/app.css`.
+
+Tool permissions are enforced by OpenCode, not by this file: if a call is denied, stop and
+report it — never retry the same action in another form.
+
+## Agent Workflow
+
+**Default behavior: spawn subagents.** Do not answer directly or write code yourself if a subagent can do it.
+**Plan first.** For any non-trivial request, launch `planner` to produce tasks before execution.
+
+| Request type                         | Action                                                          |
+| ------------------------------------ | --------------------------------------------------------------- |
+| "Plan X" / ambiguous / multi-step    | Spawn `planner` to create task files in `artifacts/tasks/`      |
+| "Implement X" / concrete code change | Spawn `developer` to implement one task from `artifacts/tasks/` |
+| "Review X" / "Does this pass?"       | Spawn `reviewer` to verify against acceptance criteria          |
+| Explore/understand codebase          | Spawn `explore` (quick/medium/very thorough)                    |
+| Complex research / multi-step        | Spawn `general`                                                 |
+
+**Never** edit source files directly as the leader agent. The leader's only job is to dispatch subagents and coordinate.
+
+### Delivery Loop (Leader)
+
+1. Read `artifacts/tasks/`, `AGENTS.md`, `artifacts/INDEX.md`, `artifacts/ARCHITECTURE.md`. Order tasks by `Depends on:`.
+2. For each task:
+   - Launch `developer` with the task file path and acceptance criteria
+   - On done, launch `reviewer` with criteria and diff
+   - On PASS: reviewer commits, deletes task file, corrects docs
+   - On FAIL: send findings back to developer (max 2 round-trips)
+3. Confirm docs corrected, task deleted, commit made.
+4. Report: tasks done, commits made, anything failing.
+
+**Rules:**
+
+- Shell allowlisted to `git status|diff|log|add|commit` and `bun run typecheck|lint`
+- `bun run dev|start|preview` globally denied — ask user to start server
+- 1 subagent depth only — `planner`, `developer`, `reviewer` cannot launch agents
+- Never edit source files or commit yourself; never push
 
 ## Commands
 
@@ -16,9 +52,9 @@ Uses bun (`bun.lock`); Node >= 24.
 
 ```bash
 bun install
-bun run dev       # vite dev
+bun run dev       # vite dev (user-only — agents denied via opencode.jsonc)
 bun run build     # vite build -> .output
-bun run start     # run built server
+bun run start     # run built server (user-only — agents denied via opencode.jsonc)
 bun run lint      # oxlint
 bun run typecheck # tsc --noEmit
 bun run format    # oxfmt, writes in place
@@ -55,3 +91,4 @@ commands or add tooling unless asked.
   clear or overwrite stored keys destructively; evolve stored data with a stable,
   versioned key/schema.
 - Directory is a git repo; husky hooks live in `.husky/` (only `pre-commit` is tracked).
+- **Agents cannot start servers**: `bun run dev|start|preview` are globally denied in `opencode.jsonc`. The leader will ask you to start `bun run dev` when a browser check is needed.

@@ -1,13 +1,53 @@
 ---
 description: Reviews a finished task against its acceptance criteria, then commits the pass and deletes the task file. Changes no code.
 mode: subagent
+permissions:
+  - action: "*"
+    resource: "*"
+    effect: deny
+  - action: subagent
+    resource: "*"
+    effect: deny
+  - action: read
+    resource: "*"
+    effect: allow
+  - action: execute
+    resource: "*"
+    effect: allow
+  - action: "chrome-devtools_*"
+    resource: "*"
+    effect: allow
+  - action: shell
+    resource: "git status *"
+    effect: allow
+  - action: shell
+    resource: "git diff *"
+    effect: allow
+  - action: shell
+    resource: "git log *"
+    effect: allow
+  - action: shell
+    resource: "git add *"
+    effect: allow
+  - action: shell
+    resource: "git commit *"
+    effect: allow
+  - action: shell
+    resource: "rm artifacts/tasks/*.md"
+    effect: allow
+  - action: shell
+    resource: "bun run lint *"
+    effect: allow
+  - action: shell
+    resource: "bun run typecheck *"
+    effect: allow
 ---
 
 You review and commit. You do not fix code and touch no files except the finished task
 file and any doc whose claims the change made stale.
 
 1. Read the task's acceptance criteria and the diff. Check every criterion by reading
-   the code and following its callers. Then run `bun run lint` and `bun run build` —
+   the code and following its callers. Then run `bun run lint` and `bun run typecheck` —
    those are the only build checks in this repo.
 2. Review against the standing rules: `localStorage`/`window`/clipboard access is
    client-only (`onMount` or `import.meta.env.SSR`), all persistence goes through the
@@ -15,8 +55,7 @@ file and any doc whose claims the change made stale.
    overwritten destructively, no new dependencies, no network calls on startup, typing
    or paste, tools load lazily, and no invented tooling or commands.
 3. The browser is opt-in. Open chrome-devtools and check the running page only when the
-   leader explicitly asks for it in the prompt. Otherwise do not start servers
-   and do not use the browser.
+   leader explicitly asks for it in the prompt. Otherwise do not start servers — `bun run dev|start|preview` are globally denied in opencode.jsonc.
 4. On PASS: stage the changed files by explicit path (never `git add -A`, which sweeps
    in unrelated dirty files), commit in the repo's style (lowercase imperative, e.g.
    `add table paste parsing`), delete the task file you just passed, correct any doc

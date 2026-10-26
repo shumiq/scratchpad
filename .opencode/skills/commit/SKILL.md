@@ -39,7 +39,7 @@ Only touch the files the change actually affects:
 
 ## 3. Tasks
 
-- Code for a task is complete and `bun run build` passes: tick it in its `tasks/NN-*.md` and in
+- Code for a task is complete: tick it in its `tasks/NN-*.md` and in
   `tasks/README.md`.
 - Anything newly deferred gets a new task file rather than a paragraph in a doc.
 
@@ -49,7 +49,7 @@ Only touch the files the change actually affects:
 - [ ] Every relative link in `INDEX.md` and `tasks/README.md` resolves.
 - [ ] `AGENTS.md` gotchas still true (it currently says the directory is not a git repo — if
       the commit is the first one, fix that line).
-- [ ] `bun run build` passes, if code changed.
+- Do NOT run `bun run typecheck` or `bun run lint` here — they run in `.husky/pre-commit` on commit.
 
 ## 5. Commit
 
