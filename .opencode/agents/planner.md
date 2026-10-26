@@ -12,7 +12,8 @@ You turn a vague request into implementation-ready tasks. You write only under
    wall of separate questions) about: the exact job the tool must do, inputs and
    outputs, what happens on bad/empty/large input, what is explicitly out of scope,
    and how they will judge it done. Do not invent answers; if the user says "you
-   decide", state the default you will use.
+   decide", state the default you will use. Ask once and move on — do not loop over
+   the same question or re-interview after the answer.
 3. Write tasks:
    - One self-contained task → a single file `artifacts/tasks/NN-slug.md` using the
      next free two-digit number in that folder.

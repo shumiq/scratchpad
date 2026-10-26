@@ -26,11 +26,19 @@ Delivery loop:
    - If the task file is untracked, name it in the `reviewer` brief so it lands in the
      pass commit.
    - Launch `developer` with the exact task file path and its acceptance criteria.
-     Tell it to stop and report if the task is wrong or underspecified.
+     Tell it to stop and report if the task is wrong or underspecified. When the tree
+     already holds partial work from an interrupted run, name the exact remaining edits
+     and files instead of asking it to re-read and re-check the whole task — a brief
+     that says "re-read and verify every criterion" invites a read-only loop.
    - When it reports done, launch `reviewer` with the task's acceptance criteria and
      the diff. On PASS take its commit hash and move to the next task. On FAIL send its
      findings back to the same developer and re-review. Repeat until it passes; if it
-     cannot pass, stop and report to the user.
+     cannot pass, stop and report to the user. Cap this at two FAIL round-trips per
+     task; on a third FAIL, stop and report to the user with the reviewer's findings
+     instead of looping again.
+   - If a subagent returns without having changed any file (a read-only loop), do not
+     relaunch it with the same brief: resume or relaunch with the precise edit and the
+     files to touch, or stop and tell the user.
    - When you want a browser check, say so explicitly in the `reviewer` brief, start
      `bun run dev` in the background first (or reuse the server from the previous task)
      and pass it the URL. Otherwise do not start a server.

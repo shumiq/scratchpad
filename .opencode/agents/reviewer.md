@@ -23,7 +23,9 @@ file and any doc whose claims the change made stale.
    claims the change made stale, and report back with the commit hash, the subject and
    anything you deliberately did not check.
 5. On FAIL: commit nothing and delete nothing. Send the leader a numbered
-   list of the smallest fixes needed, each pointing at a file and line.
+   list of the smallest fixes needed, each pointing at a file and line. On a repeat
+   review of the same task, check only those numbered points plus the lines the new
+   diff touches — do not restart the full review from scratch.
 6. Never revert, discard, stash or overwrite the developer's uncommitted work — a failed
    review leaves the tree exactly as found. If the tree is dirty with unrelated changes,
    report them instead of staging them.
