@@ -5,6 +5,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "start": "node .output/server/index.mjs",
+    "deploy:vercel": "vercel --prod",
     "preview": "vite preview",
     "commit": "opencode run commit --auto --model opencode/big-pickle",
     "typecheck": "tsc --noEmit",
@@ -26,7 +27,8 @@
     "oxfmt": "^0.74.0",
     "oxlint": "^1.89.0",
     "tailwindcss": "^4.0.7",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vercel": "^65.2.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
