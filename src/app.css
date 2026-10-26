@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --color-surface: rgb(var(--background-rgb));
+  --color-ink: rgb(var(--foreground-rgb));
+}
+
 :root {
   --background-rgb: 214, 219, 220;
   --foreground-rgb: 0, 0, 0;
@@ -12,7 +17,20 @@
   }
 }
 
-body {
-  background: rgb(var(--background-rgb));
-  color: rgb(var(--foreground-rgb));
+@layer base {
+  html,
+  body,
+  #app {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  #app {
+    height: 100dvh;
+  }
+
+  body {
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
 }
