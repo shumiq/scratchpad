@@ -25,17 +25,61 @@ export function parsePaste(html: string | undefined, plain: string | undefined):
   return parsePlain(plain);
 }
 
-// Simple tables only: rows of `<tr>`, cells of `<td>`/`<th>` with their text; merged
-// cells, nested markup and layout tables are task 10's hardening.
+// Tables from web pages: DOMParser handles the messy HTML. Merged cells (`colspan`/`rowspan`)
+// repeat their value into the slots they cover, `<br>` and block boundaries become a single
+// space, and trailing empty rows/columns are dropped. Returns undefined when the table is
+// layout, not data — the caller falls back to the plain-text flavours of the same paste.
 function parseHtmlTable(html: string): Grid | undefined {
+  if (import.meta.env.SSR) return; // DOMParser is a browser API; the paste path never runs on the server
   const doc = new DOMParser().parseFromString(html, "text/html");
   const table = doc.querySelector("table");
-  if (!table) return;
-  const rows = [...table.querySelectorAll("tr")].map((tr) =>
-    [...tr.querySelectorAll("td, th")].map((cell) => (cell.textContent ?? "").trim()),
-  );
-  if (rows.length === 0) return;
-  return normalize(rows);
+  const role = (table?.getAttribute("role") ?? "").toLowerCase();
+  if (!table || role === "presentation" || role === "none") return;
+  const slots: (string | undefined)[][] = []; // value per covered [row][column]; unset = open
+  for (const [r, tr] of [...table.querySelectorAll("tr")].entries()) {
+    if (tr.closest("table") !== table) continue; // a nested table's rows belong to it
+    slots[r] ??= [];
+    for (const cell of tr.children) {
+      if (cell.tagName !== "TD" && cell.tagName !== "TH") continue;
+      const value = cellText(cell);
+      // Place at the first open slot, then repeat into everything the spans cover.
+      // A full row (covered by rowspans) extends past its end.
+      const open = slots[r].findIndex((slot) => slot === undefined); // finds holes too (indexOf skips them)
+      const col = open === -1 ? slots[r].length : open;
+      const wide = Number(cell.getAttribute("colspan") ?? 1) || 1;
+      const deep = Number(cell.getAttribute("rowspan") ?? 1) || 1;
+      for (let down = 0; down < deep; down++) {
+        slots[r + down] ??= [];
+        for (let right = 0; right < wide; right++) slots[r + down][col + right] = value;
+      }
+    }
+  }
+  const width = slots.reduce((widest, row) => Math.max(widest, row.length), 0);
+  const grid = slots.map((row) => Array.from({ length: width }, (_, c) => row[c] ?? ""));
+  while (grid.length && grid[grid.length - 1].every((slot) => slot === "")) grid.pop();
+  while (grid[0] && grid.every((row) => row[grid[0].length - 1] === ""))
+    for (const row of grid) row.pop();
+  if (!grid.some((row) => row.some((slot) => slot !== ""))) return; // no data cells: not data
+  return grid;
+}
+
+// A cell's text: nested markup reduces to its text, a `<br>` or block boundary becomes a
+// single space (so a cell never gains a newline), and whitespace runs collapse.
+const BLOCK =
+  /^(ADDRESS|ARTICLE|ASIDE|BLOCKQUOTE|DD|DIV|DL|DT|FIELDSET|FIGCAPTION|FIGURE|FOOTER|FORM|H[1-6]|HEADER|HR|LI|MAIN|NAV|OL|P|PRE|SECTION|TABLE|UL)$/;
+
+function cellText(cell: Element): string {
+  return textOf(cell).replace(/\s+/g, " ").trim();
+}
+
+function textOf(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? "";
+  if (node.nodeType !== Node.ELEMENT_NODE) return "";
+  const element = node as Element;
+  if (element.tagName === "BR") return " ";
+  if (element.tagName === "SCRIPT" || element.tagName === "STYLE") return "";
+  const text = [...element.childNodes].map(textOf).join("");
+  return BLOCK.test(element.tagName) ? ` ${text} ` : text;
 }
 
 // Plain text: a tab between cells and a newline between rows is the spreadsheet shape;
