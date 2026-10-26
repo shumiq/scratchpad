@@ -8,9 +8,12 @@ const SAVE_ERRORS = {
   invalid: "Not saved: this note couldn't be stored.",
 } as const;
 
+type Pane = "editor" | "preview";
+
 export default function Notepad() {
   const [text, setText] = createSignal("");
   const [preview, setPreview] = createSignal("");
+  const [pane, setPane] = createSignal<Pane>("editor");
   const [saveError, setSaveError] = createSignal<keyof typeof SAVE_ERRORS | null>(null);
   const lines = createMemo(() => text().split("\n"));
   let area!: HTMLTextAreaElement;
@@ -19,9 +22,23 @@ export default function Notepad() {
   let previewTimer: ReturnType<typeof setTimeout> | undefined;
   let touched = false;
   let saved: string | undefined;
+  let caret: [number, number] = [0, 0];
 
   const syncScroll = () => {
     mirror.style.transform = `translate(${-area.scrollLeft}px, ${-area.scrollTop}px)`;
+  };
+
+  // Narrow screens show one pane at a time; both stay mounted, so the note is never
+  // reloaded. Hiding the textarea blurs it, so the caret is put back on the way in.
+  const showPane = (next: Pane) => {
+    if (next === pane()) return;
+    if (next === "preview") caret = [area.selectionStart, area.selectionEnd];
+    setPane(next);
+    if (next === "editor") {
+      area.setSelectionRange(caret[0], caret[1]);
+      area.focus();
+      syncScroll();
+    }
   };
 
   const flush = () => {
@@ -98,8 +115,36 @@ export default function Notepad() {
           </p>
         )}
       </Show>
-      <div class="grid min-h-0 flex-1 grid-rows-2 overflow-hidden lg:grid-cols-2 lg:grid-rows-1">
-        <div class="relative min-h-0 overflow-hidden">
+      <header class="flex shrink-0 items-center justify-between gap-2 border-b border-primary/40 bg-primary-bg px-3 lg:hidden">
+        <h1 class="text-h3 font-headline uppercase tracking-headline">Notepad</h1>
+        <div class="flex gap-1">
+          <button
+            type="button"
+            aria-pressed={pane() === "editor"}
+            onClick={() => showPane("editor")}
+            class={`min-h-11 rounded-round px-3 font-medium transition-colors duration-200 ease-bounce focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+              pane() === "editor" ? "bg-primary text-cream" : "text-primary-dark"
+            }`}
+          >
+            Editor
+          </button>
+          <button
+            type="button"
+            aria-pressed={pane() === "preview"}
+            onClick={() => showPane("preview")}
+            class={`min-h-11 rounded-round px-3 font-medium transition-colors duration-200 ease-bounce focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+              pane() === "preview" ? "bg-primary text-cream" : "text-primary-dark"
+            }`}
+          >
+            Preview
+          </button>
+        </div>
+      </header>
+      <div class="grid min-h-0 flex-1 grid-rows-1 overflow-hidden lg:grid-cols-2">
+        <div
+          class="relative min-h-0 overflow-hidden"
+          classList={{ "max-lg:hidden": pane() === "preview" }}
+        >
           <div
             class="pointer-events-none absolute inset-y-0 left-0 box-border w-16 border-r border-primary/40 bg-primary-bg"
             aria-hidden="true"
@@ -137,7 +182,8 @@ export default function Notepad() {
         <section
           aria-label="Markdown preview"
           tabindex="0"
-          class="min-h-0 overflow-auto border-primary/40 border-t bg-card focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary lg:border-t-0 lg:border-l"
+          class="min-h-0 overflow-auto border-primary/40 bg-card focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary lg:border-l"
+          classList={{ "max-lg:hidden": pane() === "editor" }}
         >
           <div class="markdown p-4" innerHTML={preview()} />
         </section>
