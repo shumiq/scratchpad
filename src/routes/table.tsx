@@ -1,6 +1,13 @@
 import { Index, Show, createSignal, onMount, onCleanup } from "solid-js";
 import { parsePaste } from "~/lib/paste";
-import { type Grid, emptyGrid, setCell } from "~/lib/table";
+import { TABLE_KEY, load, save } from "~/lib/storage";
+import { type Grid, emptyGrid, normalize, setCell, isGrid } from "~/lib/table";
+
+const SAVE_ERRORS = {
+  quota: "Not saved: browser storage is full.",
+  unavailable: "Not saved: browser storage is unavailable.",
+  invalid: "Not saved: this table couldn't be stored.",
+} as const;
 
 const MOVES: Record<string, [number, number]> = {
   ArrowUp: [-1, 0],
@@ -36,11 +43,30 @@ const rangeText = (sel: Range | null) => {
 export default function TablePad() {
   const [grid, setGrid] = createSignal<Grid>(emptyGrid());
   const [hint, setHint] = createSignal<string | null>(null);
+  const [saveError, setSaveError] = createSignal<keyof typeof SAVE_ERRORS | null>(null);
   const [sel, setSel] = createSignal<Range | null>(null);
   let table!: HTMLTableElement;
   let pane!: HTMLDivElement;
   let dragging = false;
   let anchor: Cell | null = null;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  const flush = () => {
+    clearTimeout(timer);
+    timer = undefined;
+    const value = grid();
+    const result = save(TABLE_KEY, value);
+    if (result.ok) {
+      setSaveError(null);
+    } else {
+      setSaveError(result.reason);
+    }
+  };
+
+  const schedule = () => {
+    clearTimeout(timer);
+    timer = setTimeout(flush, 300);
+  };
 
   const cellOf = (target: EventTarget | null): Cell | null => {
     const cell = target instanceof Element ? target.closest("td") : null;
@@ -60,6 +86,7 @@ export default function TablePad() {
     const at = cellOf(event.target);
     if (!at) return;
     setGrid(setCell(grid(), at.row, at.col, (event.target as HTMLTextAreaElement).value));
+    schedule();
   };
 
   const moveFocus = (event: KeyboardEvent) => {
@@ -124,9 +151,11 @@ export default function TablePad() {
     const parsed = parsePaste(html, plain);
     if (parsed.kind === "grid") {
       setGrid(parsed.grid);
+      schedule();
     } else if (parsed.kind === "cell") {
       const at = cellOf(document.activeElement) ?? { row: 0, col: 0 };
       setGrid(setCell(grid(), at.row, at.col, parsed.value));
+      schedule();
     } else {
       setHint(parsed.message);
     }
@@ -146,6 +175,14 @@ export default function TablePad() {
   };
 
   onMount(() => {
+    const stored = load(TABLE_KEY, emptyGrid(), isGrid);
+    if (stored.corrupt) {
+      setGrid(emptyGrid());
+      setHint("Stored table was invalid; started empty.");
+    } else {
+      setGrid(normalize(stored.value));
+    }
+
     const onMove = (e: MouseEvent) => {
       if (!dragging || !anchor) return;
       // auto-scroll
@@ -188,6 +225,10 @@ export default function TablePad() {
     };
     document.addEventListener("mousedown", onClickOutside);
     onCleanup(() => document.removeEventListener("mousedown", onClickOutside));
+    onCleanup(() => {
+      clearTimeout(timer);
+      flush();
+    });
   });
 
   const selectRow = (r: number) => {
@@ -251,6 +292,16 @@ export default function TablePad() {
             class="shrink-0 border-b border-coral bg-cream px-3 py-2 text-caption font-medium text-coral-dark"
           >
             {message()}
+          </p>
+        )}
+      </Show>
+      <Show when={saveError()}>
+        {(reason) => (
+          <p
+            role="alert"
+            class="shrink-0 border-b border-coral bg-cream px-3 py-2 text-caption font-medium text-coral-dark"
+          >
+            {SAVE_ERRORS[reason()]}
           </p>
         )}
       </Show>

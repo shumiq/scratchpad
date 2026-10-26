@@ -23,3 +23,11 @@ export function setCell(grid: Grid, row: number, col: number, value: string): Gr
     return next;
   });
 }
+
+export function isGrid(value: unknown): value is Grid {
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every((row) => Array.isArray(row) && row.every((cell) => typeof cell === "string"))
+  );
+}
