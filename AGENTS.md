@@ -7,8 +7,8 @@ Personal scratch pad web app: fast, client-side utility tools. All user data liv
 open and start typing/pasting immediately, so avoid heavyweight dependencies.
 
 Product spec: `artifacts/INDEX.md` (links DESIGN.md and ARCHITECTURE.md). The route
-foundation is implemented (`/`, `/table`, `/image`, each lazily loaded); the tool UIs
-are still stubs.
+foundation and the Notepad editor are implemented; the Table Pad and Image Pad UIs are
+still stubs. All UI follows DESIGN.md's tokens in `src/app.css`.
 
 ## Commands
 
