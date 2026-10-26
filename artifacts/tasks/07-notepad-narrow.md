@@ -1,7 +1,12 @@
 # Notepad: narrow screens
 
-**Depends on:** 06-notepad-preview
-**Done when:** on a phone the editor gets the whole width and the preview is one tap away.
+On a phone the editor gets the full width and the preview is one tap away.
 
-- [ ] Below the chosen breakpoint, editor only.
-- [ ] Toggle button switches to the preview and back.
+**Depends on:** 06
+**Done when:** below 1024px only one pane is visible at a time, and the toggle switches panes without losing text or the caret.
+
+- [ ] Below `lg`, render one pane at a time, editor first; the preview is reached from a toggle next to the header.
+- [ ] The toggle states which pane is active, and switching back restores the caret to where it was.
+- [ ] Neither pane is re-created on toggle — the document is not reloaded, and autosave keeps working in both views.
+- [ ] Check: at 375px wide, opening the notepad shows the editor; toggle → the same text rendered; toggle back → caret restored, text unchanged; reload still restores everything.
+- [ ] `bun run build` passes.
