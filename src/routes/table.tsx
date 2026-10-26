@@ -1,20 +1,7 @@
 import { Index, Show, createSignal, onMount, onCleanup } from "solid-js";
 import { parsePaste } from "~/lib/paste";
 import { TABLE_KEY, load, save } from "~/lib/storage";
-import {
-  type Grid,
-  emptyGrid,
-  normalize,
-  setCell,
-  isGrid,
-  ensureTrailingEmpty,
-  isRowEmpty,
-  isColEmpty,
-  addEmptyRow,
-  removeLastRow,
-  addEmptyCol,
-  removeLastCol,
-} from "~/lib/table";
+import { type Grid, emptyGrid, normalize, setCell, isGrid, ensureTrailingEmpty } from "~/lib/table";
 
 const SAVE_ERRORS = {
   quota: "Not saved: browser storage is full.",
@@ -99,33 +86,22 @@ export default function TablePad() {
     const at = cellOf(event.target);
     if (!at) return;
     const target = event.target as HTMLTextAreaElement;
-    let next = setCell(grid(), at.row, at.col, target.value);
-    const height = next.length;
-    const width = next[0].length;
-    const value = target.value;
-
-    // Row logic: maintain exactly one empty row at bottom
-    if (at.row === height - 1) {
-      if (value !== "") {
-        next = addEmptyRow(next);
-      } else if (height > 1 && isRowEmpty(next, height - 2)) {
-        next = removeLastRow(next);
-      }
-    }
-
-    // Column logic: maintain exactly one empty column at right
-    if (at.col === width - 1) {
-      if (value !== "") {
-        next = addEmptyCol(next);
-      } else if (width > 1 && isColEmpty(next, width - 2)) {
-        next = removeLastCol(next);
-      }
-    }
-
+    const next = ensureTrailingEmpty(setCell(grid(), at.row, at.col, target.value));
     setGrid(next);
-    // Trimming can remove the edited row/column; keep the caret in the nearest cell.
+    // Trimming can remove rows/columns; keep the caret and selection in the grid.
+    const maxRow = next.length - 1;
+    const maxCol = next[0].length - 1;
+    const s = sel();
+    if (s && (s.r2 > maxRow || s.c2 > maxCol)) {
+      setSel({
+        r1: Math.min(s.r1, maxRow),
+        c1: Math.min(s.c1, maxCol),
+        r2: Math.min(s.r2, maxRow),
+        c2: Math.min(s.c2, maxCol),
+      });
+    }
     if (document.activeElement !== target) {
-      focusCell(Math.min(at.row, next.length - 1), Math.min(at.col, next[0].length - 1));
+      focusCell(Math.min(at.row, maxRow), Math.min(at.col, maxCol));
     }
     schedule();
   };
