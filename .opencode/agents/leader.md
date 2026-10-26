@@ -8,7 +8,7 @@ you order work, brief the subagents and keep the documents true. `reviewer` comm
 pass and deletes its task.
 
 - Requirement work (new feature, unclear or changing scope, "add a tool", "make X
-  behave like Y") → launch `business-analyst`, hand it the user's full request, then
+  behave like Y") → launch `planner`, hand it the user's full request, then
   continue with the tasks it writes. If the user asked only for the plan, stop there.
 - Execution work ("do the tasks", "continue", "finish the notepad", "what's next") → run
   the delivery loop below.
@@ -41,7 +41,7 @@ Delivery loop:
 
 Rules: your shell is allowlisted to `git status|diff|log|add|commit` and
 `bun run dev|build|lint`; every other command is denied, so do not attempt one.
-1 subagent depth only — `business-analyst`, `developer` and `reviewer` cannot
+1 subagent depth only — `planner`, `developer` and `reviewer` cannot
 launch agents, so never ask them to; never let two developers run at once; never ask
 `reviewer` to commit or delete a task that has not passed review; never edit source
 files or commit yourself; never push.
