@@ -26,6 +26,7 @@ export default function ImagePad() {
   let original: CanvasImageSource | null = null;
   let origW = 0;
   let origH = 0;
+  let sourceName = "";
 
   const render = () => {
     if (!original) return;
@@ -137,6 +138,7 @@ export default function ImagePad() {
       return;
     }
     setHint(null);
+    sourceName = file.name || "";
     try {
       if (typeof createImageBitmap === "function") {
         const bmp = await createImageBitmap(file);
@@ -302,6 +304,52 @@ export default function ImagePad() {
     setResizeWarn(false);
   };
 
+  const exportName = (ext: string) => {
+    if (sourceName) {
+      const base = sourceName.replace(/\.[^/.]+$/, "");
+      return `${base}.${ext}`;
+    }
+    return `image-${Date.now()}.${ext}`;
+  };
+
+  const downloadBlob = (blob: Blob, name: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportPng = () => {
+    if (!canvas || !dims()) return;
+    canvas.toBlob((blob) => {
+      if (blob) downloadBlob(blob, exportName("png"));
+    }, "image/png");
+  };
+
+  const exportJpg = () => {
+    if (!canvas || !dims()) return;
+    const off = document.createElement("canvas");
+    off.width = canvas.width;
+    off.height = canvas.height;
+    const ctx = off.getContext("2d");
+    if (ctx) {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, off.width, off.height);
+      ctx.drawImage(canvas, 0, 0);
+    }
+    off.toBlob(
+      (blob) => {
+        if (blob) downloadBlob(blob, exportName("jpg"));
+      },
+      "image/jpeg",
+      0.9,
+    );
+  };
+
   onMount(() => {
     workArea.focus();
   });
@@ -360,6 +408,22 @@ export default function ImagePad() {
             class="rounded-full border border-primary/40 px-3 py-1 text-caption font-medium text-primary-dark hover:bg-primary-bg disabled:opacity-40"
           >
             Redo
+          </button>
+          <button
+            type="button"
+            onClick={exportPng}
+            disabled={!dims()}
+            class="rounded-full border border-primary/40 px-3 py-1 text-caption font-medium text-primary-dark hover:bg-primary-bg disabled:opacity-40"
+          >
+            Export PNG
+          </button>
+          <button
+            type="button"
+            onClick={exportJpg}
+            disabled={!dims()}
+            class="rounded-full border border-primary/40 px-3 py-1 text-caption font-medium text-primary-dark hover:bg-primary-bg disabled:opacity-40"
+          >
+            Export JPG
           </button>
           <Show when={dims()}>
             {(d) => (
