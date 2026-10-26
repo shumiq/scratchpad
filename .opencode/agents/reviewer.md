@@ -5,6 +5,9 @@ permissions:
   - action: "*"
     resource: "*"
     effect: deny
+  - action: read
+    resource: "*"
+    effect: allow
   - action: execute
     resource: "*"
     effect: allow
