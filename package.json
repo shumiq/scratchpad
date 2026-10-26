@@ -6,18 +6,34 @@
     "build": "vite build",
     "start": "node .output/server/index.mjs",
     "preview": "vite preview",
-    "commit": "opencode run commit --auto"
+    "commit": "opencode run commit --auto --model opencode/big-pickle",
+    "lint": "oxlint",
+    "format": "oxfmt",
+    "prepare": "husky"
   },
   "dependencies": {
     "@solidjs/router": "^1.0.0",
     "@solidjs/start": "^2.0.0",
+    "nitro": "^3.0.260610-beta",
     "solid-js": "^1.9.14",
-    "vite": "^8.0.0",
-    "nitro": "^3.0.260610-beta"
+    "vite": "^8.0.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.7",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "oxfmt": "^0.74.0",
+    "oxlint": "^1.89.0",
     "tailwindcss": "^4.0.7"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "oxlint --fix",
+      "oxfmt"
+    ],
+    "*.{json,jsonc,css,html,md,yml,yaml}": [
+      "oxfmt"
+    ]
   },
   "engines": {
     "node": ">=24"

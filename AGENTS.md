@@ -19,10 +19,13 @@ bun install
 bun run dev       # vite dev
 bun run build     # vite build -> .output
 bun run start     # run built server
+bun run lint      # oxlint
+bun run format    # oxfmt, writes in place
 ```
 
-There is no test, lint, typecheck, formatter, or CI config. `bun run build` is the only
-configured verification — do not invent commands or add tooling unless asked.
+Pre-commit (husky) runs lint-staged: `oxlint --fix` + `oxfmt` on staged JS/TS, `oxfmt` on
+staged json/css/html/md/yaml. There is no test, typecheck, or CI config; `bun run build`
+is the only build verification — do not invent commands or add tooling unless asked.
 
 ## Structure
 
@@ -32,6 +35,7 @@ configured verification — do not invent commands or add tooling unless asked.
 - `~/*` maps to `src/*` (`tsconfig.json`).
 - `src/app.css` — Tailwind v4 via `@import "tailwindcss"`; there is no
   `tailwind.config.js`, so use v4 CSS-first configuration.
+- `.husky/pre-commit` — runs `bunx lint-staged`; config lives in `package.json`.
 
 ## Gotchas
 
@@ -41,4 +45,4 @@ configured verification — do not invent commands or add tooling unless asked.
 - localStorage is the only copy of user data and is per-origin (~5 MB quota). Never
   clear or overwrite stored keys destructively; evolve stored data with a stable,
   versioned key/schema.
-- Directory is not a git repo yet, so there is no diff/commit history to review.
+- Directory is a git repo; husky hooks live in `.husky/` (only `pre-commit` is tracked).

@@ -20,13 +20,13 @@ questions, no confirmation prompts, no waiting for approval.
 
 Only touch the files the change actually affects:
 
-| Change | Doc |
-|--------|-----|
-| Tool behavior, what it does or refuses to do | `artifacts/wiki/<tool>.md`, resolve its open questions |
-| Storage, perf, SSR/clipboard, dependency or build change | `artifacts/ARCHITECTURE.md` |
-| Color, spacing, type, component look | `artifacts/DESIGN.md` |
-| A doc added, removed or renamed | `artifacts/INDEX.md` (its links) |
-| Command, directory layout, project constraint | `AGENTS.md` |
+| Change                                                   | Doc                                                    |
+| -------------------------------------------------------- | ------------------------------------------------------ |
+| Tool behavior, what it does or refuses to do             | `artifacts/wiki/<tool>.md`, resolve its open questions |
+| Storage, perf, SSR/clipboard, dependency or build change | `artifacts/ARCHITECTURE.md`                            |
+| Color, spacing, type, component look                     | `artifacts/DESIGN.md`                                  |
+| A doc added, removed or renamed                          | `artifacts/INDEX.md` (its links)                       |
+| Command, directory layout, project constraint            | `AGENTS.md`                                            |
 
 ## 2. Rewrite only what is now false
 

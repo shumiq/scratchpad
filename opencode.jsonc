@@ -7,22 +7,22 @@
     "bun-docs": {
       "type": "remote",
       "url": "https://bun.com/docs/mcp",
-      "enabled": true
+      "enabled": true,
     },
     "chrome-devtools": {
       "type": "local",
       "command": ["bunx", "chrome-devtools-mcp@latest", "--headless"],
-      "enabled": true
+      "enabled": true,
     },
     "tailwindcss-gitmcp": {
       "type": "remote",
       "url": "https://gitmcp.io/tailwindlabs/tailwindcss",
-      "enabled": true
+      "enabled": true,
     },
     "solid-start-gitmcp": {
       "type": "remote",
       "url": "https://gitmcp.io/solidjs/solid-start",
-      "enabled": true
-    }
-  }
+      "enabled": true,
+    },
+  },
 }

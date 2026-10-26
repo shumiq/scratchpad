@@ -8,11 +8,11 @@ open notepad or paint — instant, no setup, no login. All data stays on the dev
 
 ## Tools
 
-| Tool | Job |
-|------|-----|
-| [Notepad](wiki/notepad.md) | Write plain text with line numbers and a markdown preview. |
+| Tool                           | Job                                                                          |
+| ------------------------------ | ---------------------------------------------------------------------------- |
+| [Notepad](wiki/notepad.md)     | Write plain text with line numbers and a markdown preview.                   |
 | [Table Pad](wiki/table-pad.md) | Paste any table from anywhere, edit it, copy a range back out as plain text. |
-| [Image Pad](wiki/image-pad.md) | Paste an image, rotate/flip/crop/resize it, export or copy it. |
+| [Image Pad](wiki/image-pad.md) | Paste an image, rotate/flip/crop/resize it, export or copy it.               |
 
 ## Where things live
 

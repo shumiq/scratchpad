@@ -42,6 +42,7 @@ Flip7 is a retro-playful, teal-coral-gold design system crafted for the Flip7 ca
 ## Spacing
 
 Base unit: **8rpx**
+
 - **xs**: 8rpx
 - **sm**: 16rpx
 - **md**: 24rpx
@@ -75,16 +76,19 @@ Base unit: **8rpx**
 Inspired by the original Flip7 board game packaging. Three layers:
 
 #### Fan Cards Background
+
 - 5 colored cards fanned out behind the text
 - Rotation angles: -24deg, -12deg, 0deg, 12deg, 24deg
 
 #### FLIP7 Text
+
 - Entire text group rotated -3deg
 - Wrapped in a cream-colored parallelogram background (skewX(-6deg) + dark border)
 - "FLIP": 88rpx extra-bold, primary-dark, light text-shadow
 - "7": 152rpx extra-bold, accent gold, rotated 4-6deg, multi-layer dark text-shadow stroke
 
 #### Ribbon Banner
+
 - Classic retro folded-ribbon style from the original packaging
 - Main body: Cream background, 3rpx dark border
 - Side tails: pseudo-elements extending behind (z-index: -1), offset top: 8rpx for 3D fold effect
@@ -96,22 +100,27 @@ Inspired by the original Flip7 board game packaging. Three layers:
 Pill shape (999rpx radius), minimum 72rpx height, bounce transition curve.
 
 #### Primary (Gold CTA)
+
 - Gradient gold background, gloss overlay via ::before
 - Shadow: shadow-accent-glow, Active: scale(0.95)
 
 #### Counter Buttons (+/-)
+
 - Rounded square (16rpx radius), 80rpx x 80rpx
 - Minus: coral themed, Plus: teal themed
 
 #### BOOM Button
+
 - Active: coral fill, shadow-coral-glow, pulse animation
 
 #### Flip7 Button
+
 - Active: sky-blue fill, shadow-sky-glow
 
 ### Cards (Scoring Items)
 
 White background, 24rpx radius, shadow-card, 6rpx colored left accent bar.
+
 - Default: teal-light left border
 - Highlighted: gold left border, golden gradient, shadow-accent-glow
 - BOOM Active: coral left border, coral gradient, pulse animation
@@ -119,6 +128,7 @@ White background, 24rpx radius, shadow-card, 6rpx colored left accent bar.
 ### Victory Rankings (2nd/3rd Place)
 
 Tiered visual treatment for podium positions:
+
 - Silver (2nd): 8rpx silver accent bar, silver gradient avatar (64rpx), medal emoji, enlarged score
 - Bronze (3rd): 8rpx coral accent bar, coral gradient avatar (60rpx), medal emoji, coral score
 - Others (4th+): Default styling, standard avatar (56rpx)
@@ -133,15 +143,19 @@ Tiered visual treatment for podium positions:
 ## Animations
 
 ### Confetti (Victory)
+
 - 10 pieces, varied sizes/shapes/colors, 3.2-4.5s fall with rotation
 
 ### Crown Bounce
+
 - 1.5s infinite, 4-step keyframe with rotation wobble
 
 ### Glow Pulse (Winner Card)
+
 - 2s infinite, opacity 0.5-1.0, scale 1.0-1.03
 
 ### BOOM Pulse
+
 - 2s infinite, border/shadow oscillation
 
 ---
