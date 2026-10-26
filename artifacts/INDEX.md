@@ -4,8 +4,6 @@ Personal scratch pad web app: a set of fast, client-side utility tools opened th
 open notepad or paint — instant, no setup, no login. All data stays on the device in
 `localStorage`.
 
-**Status:** the route foundation and the Notepad are implemented; the Table Pad has an editable grid with paste (copy is still a stub); the Image Pad supports rotate/flip/crop/resize with undo, PNG/JPG export, clipboard copy, and persistence within a 2 MB save limit (bigger images work in memory with a visible "not saved" badge).
-
 ## Tools
 
 | Tool                           | Job                                                                          |
