@@ -21,6 +21,7 @@ export default function ImagePad() {
   const [resizeH, setResizeH] = createSignal(0);
   const [locked, setLocked] = createSignal(true);
   const [resizeWarn, setResizeWarn] = createSignal(false);
+  const [copyMsg, setCopyMsg] = createSignal<string | null>(null);
   let canvas!: HTMLCanvasElement;
   let workArea!: HTMLDivElement;
   let original: CanvasImageSource | null = null;
@@ -330,6 +331,36 @@ export default function ImagePad() {
     }, "image/png");
   };
 
+  const copyImage = () => {
+    if (!canvas || !dims()) return;
+    canvas.toBlob(async (blob) => {
+      if (!blob) {
+        setCopyMsg("Could not create image");
+        return;
+      }
+      const canClipboard =
+        typeof ClipboardItem !== "undefined" &&
+        typeof navigator !== "undefined" &&
+        !!navigator.clipboard &&
+        window.isSecureContext;
+      if (canClipboard) {
+        try {
+          await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+          setCopyMsg("Copied to clipboard");
+          return;
+        } catch {
+          // fall through to download
+        }
+      }
+      downloadBlob(blob, exportName("png"));
+      setCopyMsg(
+        canClipboard
+          ? "Clipboard write failed; downloaded PNG instead."
+          : "Clipboard unavailable (needs HTTPS); downloaded PNG instead.",
+      );
+    }, "image/png");
+  };
+
   const exportJpg = () => {
     if (!canvas || !dims()) return;
     const off = document.createElement("canvas");
@@ -411,6 +442,14 @@ export default function ImagePad() {
           </button>
           <button
             type="button"
+            onClick={copyImage}
+            disabled={!dims()}
+            class="rounded-full border border-primary/40 px-3 py-1 text-caption font-medium text-primary-dark hover:bg-primary-bg disabled:opacity-40"
+          >
+            Copy
+          </button>
+          <button
+            type="button"
             onClick={exportPng}
             disabled={!dims()}
             class="rounded-full border border-primary/40 px-3 py-1 text-caption font-medium text-primary-dark hover:bg-primary-bg disabled:opacity-40"
@@ -439,6 +478,16 @@ export default function ImagePad() {
           <p
             role="alert"
             class="shrink-0 border-b border-coral bg-cream px-3 py-2 text-caption font-medium text-coral-dark"
+          >
+            {message()}
+          </p>
+        )}
+      </Show>
+      <Show when={copyMsg()}>
+        {(message) => (
+          <p
+            role="status"
+            class="shrink-0 border-b border-primary/30 bg-cream px-3 py-2 text-caption font-medium text-primary-dark"
           >
             {message()}
           </p>
