@@ -291,16 +291,33 @@ export default function TablePad() {
 
   return (
     <main class="flex h-full flex-col overflow-hidden bg-cream font-mono text-body leading-5 text-primary-dark">
-      <header class="shrink-0 border-b-2 border-dashed border-primary px-3 py-2 flex items-center justify-between">
+      <header class="shrink-0 border-b-2 border-dashed border-primary px-3 py-2 flex items-center justify-between gap-2">
         <h1 class="text-h3 font-headline tracking-headline uppercase">Table Pad</h1>
-        <span class="text-caption text-primary-dark/70">{rangeText(sel())}</span>
-        <button
-          type="button"
-          onClick={() => void copySelection()}
-          class="ml-2 rounded-full border border-primary/40 px-3 py-1 text-caption font-medium text-primary-dark hover:bg-primary-bg"
-        >
-          Copy
-        </button>
+        <div class="flex items-center gap-2">
+          <span class="text-caption text-primary-dark/70">{rangeText(sel())}</span>
+          <button
+            type="button"
+            onClick={() => {
+              clearTimeout(timer);
+              timer = undefined;
+              setGrid(ensureTrailingEmpty(emptyGrid()));
+              setSel(null);
+              setHint(null);
+              save(TABLE_KEY, emptyGrid());
+              setSaveError(null);
+            }}
+            class="rounded-full border border-primary/40 px-3 py-1 text-caption font-medium text-primary-dark hover:bg-primary-bg"
+          >
+            Clear
+          </button>
+          <button
+            type="button"
+            onClick={() => void copySelection()}
+            class="rounded-full border border-primary/40 px-3 py-1 text-caption font-medium text-primary-dark hover:bg-primary-bg"
+          >
+            Copy
+          </button>
+        </div>
       </header>
       <Show when={hint()}>
         {(message) => (

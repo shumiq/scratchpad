@@ -488,6 +488,41 @@ export default function ImagePad() {
         <div class="flex items-center gap-2">
           <button
             type="button"
+            onClick={() => {
+              clearTimeout(saveTimer);
+              saveTimer = undefined;
+              original = null;
+              origW = 0;
+              origH = 0;
+              sourceName = "";
+              savedDataUrl = null;
+              setOps([]);
+              setCursor(0);
+              setCapped(false);
+              setCrop(null);
+              setIsCropMode(false);
+              setResizeW(0);
+              setResizeH(0);
+              setLocked(true);
+              setResizeWarn(false);
+              setCopyMsg(null);
+              setSaveState(null);
+              setDims(null);
+              setHint("Paste an image to start");
+              const ctx = canvas.getContext("2d");
+              if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+              }
+              canvas.width = 0;
+              canvas.height = 0;
+              save(IMAGE_KEY, null);
+            }}
+            class="rounded-full border border-primary/40 px-3 py-1 text-caption font-medium text-primary-dark hover:bg-primary-bg"
+          >
+            Clear
+          </button>
+          <button
+            type="button"
             onClick={() => pushOp("rotate:-90")}
             disabled={!dims()}
             class="rounded-full border border-primary/40 px-3 py-1 text-caption font-medium text-primary-dark hover:bg-primary-bg disabled:opacity-40"

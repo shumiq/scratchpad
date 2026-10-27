@@ -115,29 +115,52 @@ export default function Notepad() {
           </p>
         )}
       </Show>
-      <header class="flex shrink-0 items-center justify-between gap-2 border-b border-primary/40 bg-primary-bg px-3 lg:hidden">
+      <header class="flex shrink-0 items-center justify-between gap-2 border-b border-primary/40 bg-primary-bg px-3">
         <h1 class="text-h3 font-headline uppercase tracking-headline">Notepad</h1>
-        <div class="flex gap-1">
+        <div class="flex items-center gap-1">
           <button
             type="button"
-            aria-pressed={pane() === "editor"}
-            onClick={() => showPane("editor")}
-            class={`min-h-11 rounded-round px-3 font-medium transition-colors duration-200 ease-bounce focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-              pane() === "editor" ? "bg-primary text-cream" : "text-primary-dark"
-            }`}
+            onClick={() => {
+              clearTimeout(timer);
+              timer = undefined;
+              clearTimeout(previewTimer);
+              previewTimer = undefined;
+              touched = true;
+              setText("");
+              area.value = "";
+              setPreview("");
+              saved = "";
+              save(NOTEPAD_KEY, "");
+              setSaveError(null);
+              area.focus();
+              syncScroll();
+            }}
+            class="rounded-full border border-primary/40 px-3 py-1 text-caption font-medium text-primary-dark hover:bg-primary/10"
           >
-            Editor
+            Clear
           </button>
-          <button
-            type="button"
-            aria-pressed={pane() === "preview"}
-            onClick={() => showPane("preview")}
-            class={`min-h-11 rounded-round px-3 font-medium transition-colors duration-200 ease-bounce focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-              pane() === "preview" ? "bg-primary text-cream" : "text-primary-dark"
-            }`}
-          >
-            Preview
-          </button>
+          <div class="flex gap-1 lg:hidden">
+            <button
+              type="button"
+              aria-pressed={pane() === "editor"}
+              onClick={() => showPane("editor")}
+              class={`min-h-11 rounded-round px-3 font-medium transition-colors duration-200 ease-bounce focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                pane() === "editor" ? "bg-primary text-cream" : "text-primary-dark"
+              }`}
+            >
+              Editor
+            </button>
+            <button
+              type="button"
+              aria-pressed={pane() === "preview"}
+              onClick={() => showPane("preview")}
+              class={`min-h-11 rounded-round px-3 font-medium transition-colors duration-200 ease-bounce focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                pane() === "preview" ? "bg-primary text-cream" : "text-primary-dark"
+              }`}
+            >
+              Preview
+            </button>
+          </div>
         </div>
       </header>
       <div class="grid min-h-0 flex-1 grid-rows-1 overflow-hidden lg:grid-cols-2">
