@@ -26,8 +26,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["icon.svg"],
       manifest: {
-        name: "Scratch Pad",
-        short_name: "ScratchPad",
+        name: "memo",
+        short_name: "Memo",
         description: "Fast, client-side utility tools — notepad, table editor, image editor",
         theme_color: "#2BA8A2",
         background_color: "#EFF8F7",

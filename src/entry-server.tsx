@@ -12,7 +12,7 @@ export default createHandler(() => (
           <meta name="theme-color" content="#2BA8A2" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-          <meta name="apple-mobile-web-app-title" content="Scratch Pad" />
+          <meta name="apple-mobile-web-app-title" content="memo" />
           {assets}
         </head>
         <body>
